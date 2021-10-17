@@ -12,9 +12,12 @@ def create_app():
     else: 
         print("Starting Local Development")
         app.config.from_object(LocalDevelopmentConfig)
+
     db.init_app(app)
     app.app_context().push()
+    db.create_all()
     api = Api(app)
+
     return app, api
 
 app, api = create_app()
@@ -23,8 +26,14 @@ app, api = create_app()
 @app.route("/")
 def health(): 
     return {
-        "message": "ok"
+        "status": "OK"
     }
+
+from application.api import ContestantsResource, ContestantResource
+
+api.add_resource(ContestantResource, "/contestants/<int:id>")
+api.add_resource(ContestantsResource, "/contestants")
+
 
 if __name__ == "__main__": 
     app.run("0.0.0.0", port=8080)
