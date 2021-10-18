@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse, fields, marshal_with
 from application.database import db
 from application.models import Contestant
 
+
 output_fields = {
     'id': fields.String, 
     'name': fields.String, 
@@ -24,11 +25,25 @@ parser.add_argument("country", required=True, help='Must provide country')
 
 
 
+patchParser = reqparse.RequestParser()
+patchParser.add_argument("name", required=True, help='Must provide name')
+
+
+
 class ContestantResource(Resource): 
-    def get(self):
-        pass
-    def patch(self):
-        pass
+    @marshal_with(output_fields)
+    def get(self, id):
+        player = db.session.query(Contestant).get(id)
+        return player
+    def patch(self, id):
+        args = patchParser.parse_args()
+        name = args.get("name", None)
+        player = db.session.query(Contestant).get(id)
+        player.name = name
+        db.session.commit()
+        return {
+            'status': 'ok'
+        }, 200
     def delete(self): 
         pass
 
@@ -40,6 +55,8 @@ class ContestantsResource(Resource):
     def post(self): 
         args = parser.parse_args()
         name = args.get("name", None)
+
+        
         costumeTitle = args.get("costumeTitle", None)
         costumeImgUrl = args.get("costumeImgUrl", None)
         city = args.get("city", None)

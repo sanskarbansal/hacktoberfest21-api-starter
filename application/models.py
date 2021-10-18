@@ -12,5 +12,4 @@ class Contestant(db.Model):
 
     def __repr__(self):
         return '<Contestant %r>' % self.name
-
-db.create_all()
+# db.create_all()

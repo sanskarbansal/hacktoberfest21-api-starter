@@ -5,6 +5,8 @@ from application.config import LocalDevelopmentConfig
 from application.database import db 
 from flask_restful import Api
 
+from application.models import Contestant
+
 def create_app(): 
     app = Flask(__name__)
     if os.getenv('ENV', "development") == "production": 
@@ -29,9 +31,23 @@ def health():
         "status": "OK"
     }
 
+@app.route("/contestants/<string:id>/upvote", methods=["PATCH"])
+def upvote(id): 
+    player = db.session.query(Contestant).get(id)
+    if player is None: 
+        return {
+            "status": "Contestant Not Found!"
+        }, 404
+    player.votes += 1
+    db.session.commit()
+    return {
+        "status": "ok", 
+        "votes": player.votes
+    }, 200
+
 from application.api import ContestantsResource, ContestantResource
 
-api.add_resource(ContestantResource, "/contestants/<int:id>")
+api.add_resource(ContestantResource, "/contestants/<string:id>")
 api.add_resource(ContestantsResource, "/contestants")
 
 
