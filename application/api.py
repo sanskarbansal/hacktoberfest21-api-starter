@@ -1,5 +1,5 @@
 
-from flask_restful import Resource, reqparse, fields, marshal_with
+from flask_restful import Resource, marshal, reqparse, fields, marshal_with
 from application.database import db
 from application.models import Contestant
 
@@ -31,10 +31,13 @@ patchParser.add_argument("name", required=True, help='Must provide name')
 
 
 class ContestantResource(Resource): 
-    @marshal_with(output_fields)
     def get(self, id):
         player = db.session.query(Contestant).get(id)
-        return player
+        if player is None: 
+            return {
+                "status": "error"
+            }, 404
+        return marshal(player, output_fields); 
     def patch(self, id):
         args = patchParser.parse_args()
         name = args.get("name", None)
@@ -44,8 +47,17 @@ class ContestantResource(Resource):
         return {
             'status': 'ok'
         }, 200
-    def delete(self): 
-        pass
+    def delete(self, id):
+        player = db.session.query(Contestant).get(id)
+        if player is None: 
+            return {
+                "status": "error"
+            }, 404
+        db.session.delete(player)
+        db.session.commit()
+        return {
+            "status": "ok"
+        }
 
 class ContestantsResource(Resource): 
     @marshal_with(output_fields)
